@@ -1,0 +1,103 @@
+-- 🎬 Movie Booking SQL Project Queries
+-- Author: John Robin A
+-- Description: Demonstrates SQL fundamentals, joins, subqueries, and filters using the Movie Booking dataset.
+
+-- 1️⃣ Movies released in 2024
+SELECT * FROM movie_slot.movie_booking WHERE ReleaseDate BETWEEN '2024-01-01' AND '2024-12-31';
+
+-- 2️⃣ Select all movie records
+SELECT * FROM movie_slot.movie_booking;
+
+-- 3️⃣ Select only Title and Genre
+SELECT Title, Genre FROM movie_slot.movie_booking;
+
+-- 4️⃣ Display unique genres
+SELECT DISTINCT Genre FROM movie_slot.movie_booking;
+
+-- 5️⃣ Customers from Chennai
+SELECT * FROM movie_slot.movie_booking_customers WHERE City = 'Chennai';
+
+-- 6️⃣ Bookings with more than 3 seats
+SELECT * FROM movie_slot.movie_booking_booking WHERE SeatsBooked > 3;
+
+-- 7️⃣ Payments pending
+SELECT * FROM movie_slot.movie_booking_payments WHERE Status = 'Pending';
+
+-- 8️⃣ Movies released between 2023 and 2024
+SELECT * FROM movie_slot.movie_booking WHERE ReleaseDate BETWEEN '01-01-2023' AND '01-01-2024';
+
+-- 9️⃣ Shows priced between 200 and 400
+SELECT * FROM movie_slot.movie_booking_shows WHERE TicketPrice BETWEEN 200 AND 400;
+
+-- 🔟 Customers whose name starts with 'C'
+SELECT * FROM movie_slot.movie_booking_customers WHERE Name LIKE 'C%';
+
+-- 11️⃣ Movies ordered by ReleaseDate
+SELECT * FROM movie_slot.movie_booking ORDER BY ReleaseDate ASC;
+
+-- 12️⃣ Bookings ordered by BookingDate
+SELECT * FROM movie_slot.movie_booking_booking ORDER BY BookingDate DESC;
+
+-- 13️⃣ Total seats booked per customer
+SELECT CustomerID, SUM(SeatsBooked) FROM movie_slot.movie_booking_booking GROUP BY CustomerID;
+
+-- 14️⃣ Total amount paid per payment ID
+SELECT PaymentID, SUM(Amount) AS Total_Amount_paid FROM movie_slot.movie_booking_payments GROUP BY PaymentID;
+
+-- 15️⃣ Number of bookings for each show
+SELECT ShowID, COUNT(*) FROM movie_slot.movie_booking_booking GROUP BY ShowID;
+
+-- 16️⃣ Customers who booked more than 2 shows
+SELECT CustomerID, COUNT(*) AS TotalBookings FROM movie_slot.movie_booking_booking GROUP BY CustomerID HAVING COUNT(*) > 2;
+
+-- 17️⃣ Shows where total seats booked > 10
+SELECT ShowID, SUM(SeatsBooked) FROM movie_slot.movie_booking_booking GROUP BY ShowID HAVING SUM(SeatsBooked) > 10;
+
+-- 18️⃣ Delete booking with ID = 5
+DELETE FROM movie_slot.movie_booking_booking WHERE BookingID = 5;
+
+-- 19️⃣ Delete all pending payments older than 2024
+DELETE FROM movie_slot.movie_booking_payments WHERE Status = 'Pending' AND PaymentDate < '2024-01-01';
+
+-- 20️⃣ First 5 customers
+SELECT * FROM movie_slot.movie_booking_customers ORDER BY CustomerID LIMIT 5;
+
+-- 21️⃣ Skip first 5 customers
+SELECT * FROM movie_slot.movie_booking_customers ORDER BY CustomerID LIMIT 5 OFFSET 5;
+
+-- 22️⃣ Customers who booked shows with ticket price > 400
+SELECT DISTINCT CustomerID FROM movie_slot.movie_booking_booking WHERE ShowID IN (
+    SELECT ShowID FROM movie_slot.movie_booking_shows WHERE TicketPrice > 400
+);
+
+-- 23️⃣ Movies with total bookings > 10
+SELECT DISTINCT MovieID FROM movie_slot.movie_booking_shows WHERE ShowID IN (
+    SELECT ShowID FROM movie_slot.movie_booking_booking GROUP BY ShowID HAVING COUNT(BookingID) > 10
+);
+
+-- 24️⃣ INNER JOIN: Customers and Bookings
+SELECT c.Name, b.BookingID, b.SeatsBooked, b.BookingDate 
+FROM movie_slot.movie_booking_customers c 
+INNER JOIN movie_slot.movie_booking_booking b ON c.CustomerID = b.CustomerID;
+
+-- 25️⃣ LEFT JOIN: Shows and Movies
+SELECT s.ShowID, s.ShowDate, s.TicketPrice, m.Title 
+FROM movie_slot.movie_booking_shows s 
+LEFT JOIN movie_slot.movie_booking m ON s.MovieID = m.MovieID;
+
+-- 26️⃣ RIGHT JOIN: Bookings and Payments
+SELECT b.BookingID, b.CustomerID, p.PaymentID, p.Amount, p.Status 
+FROM movie_slot.movie_booking_booking b 
+RIGHT JOIN movie_slot.movie_booking_payments p ON b.BookingID = p.BookingID;
+
+-- 27️⃣ INNER JOIN: Shows, Movies, and Theatres
+SELECT s.ShowID, m.Title AS MovieTitle, t.Name, s.ShowDate 
+FROM movie_slot.movie_booking_shows s 
+INNER JOIN movie_slot.movie_booking m ON s.MovieID = m.MovieID 
+INNER JOIN movie_slot.movie_booking_theatre t ON s.TheatreID = t.TheatreID;
+
+-- 28️⃣ Customers who booked more than one show on the same day
+SELECT CustomerID, BookingDate, COUNT(DISTINCT ShowID)  
+FROM movie_slot.movie_booking_booking 
+GROUP BY CustomerID, BookingDate 
+HAVING COUNT(DISTINCT ShowID) > 1;
